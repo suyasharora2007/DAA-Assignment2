@@ -1,5 +1,7 @@
 package structures;
 
+import metrics.OperationCounter;
+
 /**
  * Singly linked list storing primitive int values.
  */
@@ -18,8 +20,22 @@ public class MyLinkedList {
     private Node head;
     private int size;
 
+    private final OperationCounter counter;
+
+    public MyLinkedList() {
+        counter = new OperationCounter();
+    }
+
     public int size() {
         return size;
+    }
+
+    public OperationCounter getCounter() {
+        return counter;
+    }
+
+    public void resetCounter() {
+        counter.reset();
     }
 
     public void add(int x) {
@@ -27,15 +43,24 @@ public class MyLinkedList {
         Node newNode = new Node(x);
 
         if (head == null) {
+
             head = newNode;
+            counter.move();
+
         } else {
+
             Node current = head;
 
             while (current.next != null) {
+
                 current = current.next;
+
+                counter.step();
             }
 
             current.next = newNode;
+
+            counter.move();
         }
 
         size++;
@@ -52,12 +77,16 @@ public class MyLinkedList {
             newNode.next = head;
             head = newNode;
 
+            counter.move();
+
         } else {
 
             Node previous = getNode(index - 1);
 
             newNode.next = previous.next;
             previous.next = newNode;
+
+            counter.move();
         }
 
         size++;
@@ -72,7 +101,10 @@ public class MyLinkedList {
         if (index == 0) {
 
             removed = head.data;
+
             head = head.next;
+
+            counter.move();
 
         } else {
 
@@ -80,7 +112,10 @@ public class MyLinkedList {
             Node target = previous.next;
 
             removed = target.data;
+
             previous.next = target.next;
+
+            counter.move();
         }
 
         size--;
@@ -92,7 +127,9 @@ public class MyLinkedList {
 
         checkElementIndex(index);
 
-        return getNode(index).data;
+        Node node = getNode(index);
+
+        return node.data;
     }
 
     public boolean contains(int x) {
@@ -101,11 +138,15 @@ public class MyLinkedList {
 
         while (current != null) {
 
+            counter.compare();
+
             if (current.data == x) {
                 return true;
             }
 
             current = current.next;
+
+            counter.step();
         }
 
         return false;
@@ -116,7 +157,10 @@ public class MyLinkedList {
         Node current = head;
 
         for (int i = 0; i < index; i++) {
+
             current = current.next;
+
+            counter.step();
         }
 
         return current;
@@ -125,6 +169,7 @@ public class MyLinkedList {
     private void checkElementIndex(int index) {
 
         if (index < 0 || index >= size) {
+
             throw new IndexOutOfBoundsException(
                     "Index: " + index + ", size: " + size
             );
@@ -134,6 +179,7 @@ public class MyLinkedList {
     private void checkPositionIndex(int index) {
 
         if (index < 0 || index > size) {
+
             throw new IndexOutOfBoundsException(
                     "Index: " + index + ", size: " + size
             );

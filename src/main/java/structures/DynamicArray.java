@@ -1,5 +1,7 @@
 package structures;
 
+import metrics.OperationCounter;
+
 /**
  * Dynamic array that stores primitive int values.
  */
@@ -7,6 +9,8 @@ public class DynamicArray {
 
     private int[] data;
     private int size;
+
+    private final OperationCounter counter;
 
     public DynamicArray() {
         this(4);
@@ -21,6 +25,7 @@ public class DynamicArray {
 
         data = new int[initialCapacity];
         size = 0;
+        counter = new OperationCounter();
     }
 
     public int size() {
@@ -31,11 +36,21 @@ public class DynamicArray {
         return data.length;
     }
 
+    public OperationCounter getCounter() {
+        return counter;
+    }
+
+    public void resetCounter() {
+        counter.reset();
+    }
+
     public void add(int x) {
 
         ensureCapacity();
 
         data[size] = x;
+        counter.move();
+
         size++;
     }
 
@@ -46,10 +61,16 @@ public class DynamicArray {
         ensureCapacity();
 
         for (int i = size; i > index; i--) {
+
             data[i] = data[i - 1];
+
+            counter.step();
+            counter.move();
         }
 
         data[index] = x;
+        counter.move();
+
         size++;
     }
 
@@ -58,9 +79,14 @@ public class DynamicArray {
         checkElementIndex(index);
 
         int removed = data[index];
+        counter.step();
 
         for (int i = index; i < size - 1; i++) {
+
             data[i] = data[i + 1];
+
+            counter.step();
+            counter.move();
         }
 
         size--;
@@ -72,12 +98,18 @@ public class DynamicArray {
 
         checkElementIndex(index);
 
+        counter.step();
+
         return data[index];
     }
 
     public boolean contains(int x) {
 
         for (int i = 0; i < size; i++) {
+
+            counter.step();
+
+            counter.compare();
 
             if (data[i] == x) {
                 return true;
@@ -96,7 +128,11 @@ public class DynamicArray {
         int[] newData = new int[data.length * 2];
 
         for (int i = 0; i < size; i++) {
+
             newData[i] = data[i];
+
+            counter.step();
+            counter.move();
         }
 
         data = newData;
@@ -105,6 +141,7 @@ public class DynamicArray {
     private void checkElementIndex(int index) {
 
         if (index < 0 || index >= size) {
+
             throw new IndexOutOfBoundsException(
                     "Index: " + index + ", size: " + size
             );
@@ -114,6 +151,7 @@ public class DynamicArray {
     private void checkPositionIndex(int index) {
 
         if (index < 0 || index > size) {
+
             throw new IndexOutOfBoundsException(
                     "Index: " + index + ", size: " + size
             );

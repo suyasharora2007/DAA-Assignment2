@@ -1,5 +1,7 @@
 package structures;
 
+import metrics.OperationCounter;
+
 /**
  * Array-based min heap storing primitive int values.
  */
@@ -8,11 +10,14 @@ public class MinHeap {
     private int[] heap;
     private int size;
 
+    private final OperationCounter counter;
+
     public MinHeap() {
         this(16);
     }
 
     public MinHeap(int initialCapacity) {
+
         if (initialCapacity < 1) {
             throw new IllegalArgumentException(
                     "Initial capacity must be positive"
@@ -20,10 +25,19 @@ public class MinHeap {
         }
 
         heap = new int[initialCapacity];
+        counter = new OperationCounter();
     }
 
     public int size() {
         return size;
+    }
+
+    public OperationCounter getCounter() {
+        return counter;
+    }
+
+    public void resetCounter() {
+        counter.reset();
     }
 
     public void insert(int x) {
@@ -31,6 +45,7 @@ public class MinHeap {
         ensureCapacity();
 
         heap[size] = x;
+        counter.move();
 
         bubbleUp(size);
 
@@ -43,6 +58,8 @@ public class MinHeap {
             throw new IllegalStateException("Heap is empty");
         }
 
+        counter.step();
+
         return heap[0];
     }
 
@@ -52,12 +69,19 @@ public class MinHeap {
             throw new IllegalStateException("Heap is empty");
         }
 
+        counter.step();
+
         int minimum = heap[0];
 
         size--;
 
         if (size > 0) {
+
             heap[0] = heap[size];
+
+            counter.step();
+            counter.move();
+
             bubbleDown(0);
         }
 
@@ -69,6 +93,11 @@ public class MinHeap {
         while (index > 0) {
 
             int parent = (index - 1) / 2;
+
+            counter.step();
+            counter.step();
+
+            counter.compare();
 
             if (heap[parent] <= heap[index]) {
                 break;
@@ -86,14 +115,31 @@ public class MinHeap {
 
             int left = 2 * index + 1;
             int right = 2 * index + 2;
+
             int smallest = index;
 
-            if (left < size && heap[left] < heap[smallest]) {
-                smallest = left;
+            if (left < size) {
+
+                counter.step();
+                counter.step();
+
+                counter.compare();
+
+                if (heap[left] < heap[smallest]) {
+                    smallest = left;
+                }
             }
 
-            if (right < size && heap[right] < heap[smallest]) {
-                smallest = right;
+            if (right < size) {
+
+                counter.step();
+                counter.step();
+
+                counter.compare();
+
+                if (heap[right] < heap[smallest]) {
+                    smallest = right;
+                }
             }
 
             if (smallest == index) {
@@ -109,8 +155,14 @@ public class MinHeap {
     private void swap(int first, int second) {
 
         int temp = heap[first];
+
         heap[first] = heap[second];
+
         heap[second] = temp;
+
+        counter.move();
+        counter.move();
+        counter.move();
     }
 
     private void ensureCapacity() {
@@ -122,7 +174,11 @@ public class MinHeap {
         int[] newHeap = new int[heap.length * 2];
 
         for (int i = 0; i < size; i++) {
+
             newHeap[i] = heap[i];
+
+            counter.step();
+            counter.move();
         }
 
         heap = newHeap;
